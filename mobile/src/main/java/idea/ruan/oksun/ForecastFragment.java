@@ -4,6 +4,7 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.text.format.Time;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -14,30 +15,27 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
-import java.net.URI;
 import java.net.URL;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
 public class ForecastFragment extends Fragment {
 
     ArrayAdapter<String> mForecastAdapter;
-    final List<String> weekForecast = Arrays.asList(
+    ListView listView;
 
-                    "Mon 6/23 - Sunny - 31/17",
-                    "Tue 6/24 - Foggy - 21/8",
-                    "Wed 6/25 - Cloudy - 22/17",
-                    "Thurs 6/26 - Rainy - 18/11",
-                    "Fri 6/27 - Foggy - 21/10",
-                    "Sat 6/28 - TRAPPED IN WEATHERSTATION - 23/18",
-                    "Sun 6/29 - Sunny - 20/7"
-            );
+    ArrayList<String> weekForecast = new ArrayList<>();
 
     public ForecastFragment() {
     }
@@ -58,7 +56,7 @@ public class ForecastFragment extends Fragment {
 
         View rootView = inflater.inflate(R.layout.f_forecast, container, false);
 
-        ListView listView = (ListView) rootView.findViewById(R.id.listview_forecast);
+        listView = (ListView) rootView.findViewById(R.id.listview_forecast);
         listView.setAdapter(mForecastAdapter);
 
         return rootView;
@@ -101,6 +99,65 @@ public class ForecastFragment extends Fragment {
                 .appendQueryParameter(UNITS_PARAM, units)
                 .appendQueryParameter(DAYS_PARAM, "" + numDays)
                 .build().toString();
+    }
+
+    private String[] getWeatherDataFromJson(String forecastJsonStr, int numDays) throws JSONException {
+
+        final String OWM_LIST = "list";
+        final String OWM_WEATHER = "weather";
+        final String OWM_TEMPERATURE = "temp";
+        final String OWM_MAX = "max";
+        final String OWM_MIN = "min";
+        final String OWM_DESCRIPTION = "main";
+
+        JSONArray weatherArray = new JSONObject(forecastJsonStr).getJSONArray(OWM_LIST);
+
+        Time dayTime = new Time();
+        dayTime.setToNow();
+
+        int julianStartDay = Time.getJulianDay(System.currentTimeMillis(), dayTime.gmtoff);
+
+        // now we work exclusively in UTC
+        dayTime = new Time();
+
+        String[] result = new String[numDays];
+
+        for (int i = 0; i < weatherArray.length(); i++) {
+
+            String day;
+            String description;
+            String highAndLow;
+
+            JSONObject dayForecast = weatherArray.getJSONObject(i);
+
+            long dateTime;
+
+            dateTime = dayTime.setJulianDay(julianStartDay + i);
+            day = getReadableDateString(dateTime);
+
+            description = dayForecast
+                    .getJSONArray(OWM_WEATHER)
+                    .getJSONObject(0)
+                    .getString(OWM_DESCRIPTION);
+
+            JSONObject temperatureObject = dayForecast.getJSONObject(OWM_TEMPERATURE);
+
+            double high = temperatureObject.getDouble(OWM_MAX);
+            double low = temperatureObject.getDouble(OWM_MIN);
+
+            highAndLow = Math.round(high) + "/" + Math.round(low);
+
+            result[i] = day + " - " + description + " - " + highAndLow;
+        }
+
+        return result;
+    }
+
+    private String getReadableDateString(long dateTime) {
+
+        SimpleDateFormat shortenedDateFormat = new SimpleDateFormat("EEE MMM dd");
+
+        return shortenedDateFormat.format(dateTime);
     }
 
     private class FetchWeatherTask extends AsyncTask<String, Void, String> {
@@ -163,7 +220,17 @@ public class ForecastFragment extends Fragment {
         @Override
         protected void onPostExecute(String s) {
             super.onPostExecute(s);
-            Log.d("ml", s);
+
+            try {
+                weekForecast.clear();
+
+                weekForecast.addAll(Arrays.asList(getWeatherDataFromJson(s, 7)));
+
+                mForecastAdapter.notifyDataSetChanged();
+
+            } catch (Exception e) {
+                Log.e("ForecastFragment", "Error getting weather", e);
+            }
         }
     }
 }
