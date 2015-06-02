@@ -1,5 +1,6 @@
 package idea.ruan.oksun;
 
+import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -12,6 +13,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
@@ -29,13 +31,14 @@ import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.concurrent.TimeUnit;
 
 public class ForecastFragment extends Fragment {
 
-    ArrayAdapter<String> mForecastAdapter;
-    ListView listView;
+    private ArrayAdapter<String> mForecastAdapter;
+    private ListView listView;
 
-    ArrayList<String> weekForecast = new ArrayList<>();
+    private ArrayList<String> weekForecast = new ArrayList<>();
 
     public ForecastFragment() {
     }
@@ -58,8 +61,27 @@ public class ForecastFragment extends Fragment {
 
         listView = (ListView) rootView.findViewById(R.id.listview_forecast);
         listView.setAdapter(mForecastAdapter);
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+
+                Intent intent = new Intent(getActivity(), DetailActivity.class);
+
+                String day = mForecastAdapter.getItem(position);
+
+                intent.putExtra(Intent.EXTRA_TEXT, day);
+
+                startActivity(intent);
+            }
+        });
 
         return rootView;
+    }
+
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        new FetchWeatherTask().execute("109451");
     }
 
     @Override
@@ -85,7 +107,7 @@ public class ForecastFragment extends Fragment {
 
         String format = "json";
         String units = "metric";
-        int numDays = 7;
+        int numDays = 14;
 
         final String FORECAST_BASE_URL ="http://api.openweathermap.org/data/2.5/forecast/daily?";
         final String QUERY_PARAM = "q";
@@ -222,11 +244,12 @@ public class ForecastFragment extends Fragment {
             super.onPostExecute(s);
 
             try {
+//                mForecastAdapter.clear();
+//                mForecastAdapter.addAll(Arrays.asList(getWeatherDataFromJson(s, 14)));
                 weekForecast.clear();
-
-                weekForecast.addAll(Arrays.asList(getWeatherDataFromJson(s, 7)));
-
+                weekForecast.addAll(Arrays.asList(getWeatherDataFromJson(s, 14)));
                 mForecastAdapter.notifyDataSetChanged();
+
 
             } catch (Exception e) {
                 Log.e("ForecastFragment", "Error getting weather", e);
