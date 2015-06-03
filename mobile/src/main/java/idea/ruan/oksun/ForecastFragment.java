@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.text.format.Time;
 import android.util.Log;
@@ -31,7 +32,6 @@ import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.concurrent.TimeUnit;
 
 public class ForecastFragment extends Fragment {
 
@@ -79,9 +79,9 @@ public class ForecastFragment extends Fragment {
     }
 
     @Override
-    public void onActivityCreated(Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-        new FetchWeatherTask().execute("109451");
+    public void onStart() {
+        super.onStart();
+        getWeather();
     }
 
     @Override
@@ -96,11 +96,20 @@ public class ForecastFragment extends Fragment {
 
         if (id == R.id.action_refresh) {
 
-            new FetchWeatherTask().execute("109451");
+            getWeather();
 
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private void getWeather() {
+
+        String location = PreferenceManager.getDefaultSharedPreferences(getActivity())
+                .getString(getActivity().getString(R.string.pref_location_key),
+                        getActivity().getString(R.string.pref_location_default));
+
+        new FetchWeatherTask().execute(location);
     }
 
     private String createUrlString(String zipCode) {
@@ -167,12 +176,24 @@ public class ForecastFragment extends Fragment {
             double high = temperatureObject.getDouble(OWM_MAX);
             double low = temperatureObject.getDouble(OWM_MIN);
 
+            if (PreferenceManager.getDefaultSharedPreferences(getActivity())
+                    .getString(getActivity().getString(R.string.pref_temp_units_key),
+                            getActivity().getString(R.string.pref_units_metric))
+                    .equals(getActivity().getString(R.string.pref_units_imperial))) {
+                high = celsiusToFahrenheit(high);
+                low = celsiusToFahrenheit(low);
+            }
+
             highAndLow = Math.round(high) + "/" + Math.round(low);
 
             result[i] = day + " - " + description + " - " + highAndLow;
         }
 
         return result;
+    }
+
+    private double celsiusToFahrenheit(double d) {
+        return d * 9 / 5 + 32;
     }
 
     private String getReadableDateString(long dateTime) {
