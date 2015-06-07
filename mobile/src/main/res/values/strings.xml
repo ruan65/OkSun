@@ -15,4 +15,8 @@
     <string name="pref_units_label_imperial">Imperial</string>
     <string name="pref_units_metric" translatable="false">metric</string>
     <string name="pref_units_imperial" translatable="false">imperial</string>
+    <string name="action_view_location">View location</string>
+    <string name="toast_err_location_view">You don\'t have an app to view location</string>
+    <string name="current_location">current_location</string>
+    <string name="action_share">share</string>
 </resources>

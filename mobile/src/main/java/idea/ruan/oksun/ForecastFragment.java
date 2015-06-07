@@ -118,7 +118,7 @@ public class ForecastFragment extends Fragment {
         String units = "metric";
         int numDays = 14;
 
-        final String FORECAST_BASE_URL ="http://api.openweathermap.org/data/2.5/forecast/daily?";
+        final String FORECAST_BASE_URL = "http://api.openweathermap.org/data/2.5/forecast/daily?";
         final String QUERY_PARAM = "q";
         final String FORMAT_PARAM = "mode";
         final String UNITS_PARAM = "units";
@@ -141,7 +141,15 @@ public class ForecastFragment extends Fragment {
         final String OWM_MIN = "min";
         final String OWM_DESCRIPTION = "main";
 
-        JSONArray weatherArray = new JSONObject(forecastJsonStr).getJSONArray(OWM_LIST);
+        JSONObject serverResponse = new JSONObject(forecastJsonStr);
+
+        JSONObject coords = serverResponse.getJSONObject("city").getJSONObject("coord");
+
+        PreferenceManager.getDefaultSharedPreferences(getActivity()).edit()
+                .putString(getActivity().getString(R.string.current_location),
+                        coords.getString("lat") + "," + coords.getString("lon")).apply();
+
+        JSONArray weatherArray = serverResponse.getJSONArray(OWM_LIST);
 
         Time dayTime = new Time();
         dayTime.setToNow();
@@ -240,7 +248,6 @@ public class ForecastFragment extends Fragment {
                     }
                 }
 
-
             } catch (MalformedURLException e) {
                 e.printStackTrace();
             } catch (IOException e) {
@@ -270,7 +277,6 @@ public class ForecastFragment extends Fragment {
                 weekForecast.clear();
                 weekForecast.addAll(Arrays.asList(getWeatherDataFromJson(s, 14)));
                 mForecastAdapter.notifyDataSetChanged();
-
 
             } catch (Exception e) {
                 Log.e("ForecastFragment", "Error getting weather", e);
