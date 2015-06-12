@@ -36,6 +36,11 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="idea.ruan.oksun.Main" />
         </activity>
+
+        <provider
+            android:authorities="idea.ruan.oksun"
+            android:name=".data.WeatherProvider" />
+
     </application>
 
 </manifest>

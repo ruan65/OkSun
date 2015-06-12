@@ -185,7 +185,7 @@ public class ForecastFragment extends Fragment {
             double low = temperatureObject.getDouble(OWM_MIN);
 
             if (PreferenceManager.getDefaultSharedPreferences(getActivity())
-                    .getString(getActivity().getString(R.string.pref_temp_units_key),
+                    .getString(getActivity().getString(R.string.pref_units_key),
                             getActivity().getString(R.string.pref_units_metric))
                     .equals(getActivity().getString(R.string.pref_units_imperial))) {
                 high = celsiusToFahrenheit(high);
