@@ -178,6 +178,15 @@ public class FetchWeatherTask extends AsyncTask<String, Void, String[]> {
 
         try {
             JSONObject forecastJson = new JSONObject(forecastJsonStr);
+
+            /**
+             *  This is to fetch coordinates how API understand location
+             */
+            JSONObject coords = forecastJson.getJSONObject("city").getJSONObject("coord");
+
+            PreferenceManager.getDefaultSharedPreferences(mContext).edit()
+                    .putString(mContext.getString(R.string.current_location_coords),
+                            coords.getString("lat") + "," + coords.getString("lon")).apply();
             JSONArray weatherArray = forecastJson.getJSONArray(OWM_LIST);
 
             JSONObject cityJson = forecastJson.getJSONObject(OWM_CITY);
@@ -190,7 +199,7 @@ public class FetchWeatherTask extends AsyncTask<String, Void, String[]> {
             long locationId = addLocation(locationSetting, cityName, cityLatitude, cityLongitude);
 
             // Insert the new weather information into the database
-            Vector<ContentValues> cVVector = new Vector<ContentValues>(weatherArray.length());
+            Vector<ContentValues> cVVector = new Vector<>(weatherArray.length());
 
             // OWM returns daily forecasts based upon the local time of the city that is being
             // asked for, which means that we need to know the GMT offset to translate this data

@@ -2,12 +2,10 @@ package idea.ruan.oksun;
 
 import android.content.Intent;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.text.format.Time;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -22,16 +20,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 
 public class ForecastFragment extends Fragment {
 
@@ -109,7 +99,7 @@ public class ForecastFragment extends Fragment {
                 .getString(getActivity().getString(R.string.pref_location_key),
                         getActivity().getString(R.string.pref_location_default));
 
-        new FetchWeatherTask().execute(location);
+        new FetchWeatherTask(getActivity(), mForecastAdapter).execute(location);
     }
 
     private String createUrlString(String zipCode) {
@@ -146,7 +136,7 @@ public class ForecastFragment extends Fragment {
         JSONObject coords = serverResponse.getJSONObject("city").getJSONObject("coord");
 
         PreferenceManager.getDefaultSharedPreferences(getActivity()).edit()
-                .putString(getActivity().getString(R.string.current_location),
+                .putString(getActivity().getString(R.string.current_location_coords),
                         coords.getString("lat") + "," + coords.getString("lon")).apply();
 
         JSONArray weatherArray = serverResponse.getJSONArray(OWM_LIST);
@@ -209,78 +199,5 @@ public class ForecastFragment extends Fragment {
         SimpleDateFormat shortenedDateFormat = new SimpleDateFormat("EEE MMM dd");
 
         return shortenedDateFormat.format(dateTime);
-    }
-
-    private class FetchWeatherTask extends AsyncTask<String, Void, String> {
-
-        @Override
-        protected String doInBackground(String... params) {
-
-            HttpURLConnection urlConnection = null;
-            BufferedReader bReader = null;
-
-            String forecastJsonStr = null;
-
-            try {
-                URL url = new URL(createUrlString(params[0]));
-
-                urlConnection = (HttpURLConnection) url.openConnection();
-
-                urlConnection.setRequestMethod("GET");
-                urlConnection.connect();
-
-                InputStream is = urlConnection.getInputStream();
-                StringBuilder sb = new StringBuilder();
-
-                if (is != null) {
-
-
-                    bReader = new BufferedReader(new InputStreamReader(is));
-
-                    String line;
-
-                    while ((line = bReader.readLine()) != null) {
-                        sb.append(line + "\n");
-                    }
-
-                    if (sb.length() != 0) {
-                        forecastJsonStr = sb.toString();
-                    }
-                }
-
-            } catch (MalformedURLException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                Log.d(getClass().getName(), "Error ", e);
-            } finally {
-                if (urlConnection != null) {
-                    urlConnection.disconnect();
-                }
-                if (bReader != null) {
-                    try {
-                        bReader.close();
-                    } catch (IOException e) {
-                        Log.d(getClass().getName(), "Error ", e);
-                    }
-                }
-            }
-            return forecastJsonStr;
-        }
-
-        @Override
-        protected void onPostExecute(String s) {
-            super.onPostExecute(s);
-
-            try {
-//                mForecastAdapter.clear();
-//                mForecastAdapter.addAll(Arrays.asList(getWeatherDataFromJson(s, 14)));
-                weekForecast.clear();
-                weekForecast.addAll(Arrays.asList(getWeatherDataFromJson(s, 14)));
-                mForecastAdapter.notifyDataSetChanged();
-
-            } catch (Exception e) {
-                Log.e("ForecastFragment", "Error getting weather", e);
-            }
-        }
     }
 }
