@@ -1,34 +1,22 @@
 package idea.ruan.oksun;
 
-import android.content.Intent;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
-import android.text.format.Time;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
+import idea.ruan.oksun.data.WeatherContract;
 
 public class ForecastFragment extends Fragment {
 
-    private ArrayAdapter<String> mForecastAdapter;
-    private ListView listView;
-
-    private ArrayList<String> weekForecast = new ArrayList<>();
+    private ForecastAdapter mForecastAdapter;
 
     public ForecastFragment() {
     }
@@ -38,40 +26,6 @@ public class ForecastFragment extends Fragment {
         super.onCreate(savedInstanceState);
 
         setHasOptionsMenu(true);
-    }
-
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-
-        mForecastAdapter = new ArrayAdapter<>(getActivity(), R.layout.list_item_forecast,
-                R.id.list_item_forecast_textview, weekForecast);
-
-        View rootView = inflater.inflate(R.layout.f_forecast, container, false);
-
-        listView = (ListView) rootView.findViewById(R.id.listview_forecast);
-        listView.setAdapter(mForecastAdapter);
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-
-                Intent intent = new Intent(getActivity(), DetailActivity.class);
-
-                String day = mForecastAdapter.getItem(position);
-
-                intent.putExtra(Intent.EXTRA_TEXT, day);
-
-                startActivity(intent);
-            }
-        });
-
-        return rootView;
-    }
-
-    @Override
-    public void onStart() {
-        super.onStart();
-        getWeather();
     }
 
     @Override
@@ -86,118 +40,45 @@ public class ForecastFragment extends Fragment {
 
         if (id == R.id.action_refresh) {
 
-            getWeather();
+            updateWeather();
 
             return true;
         }
         return super.onOptionsItemSelected(item);
     }
 
-    private void getWeather() {
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
 
-        String location = PreferenceManager.getDefaultSharedPreferences(getActivity())
-                .getString(getActivity().getString(R.string.pref_location_key),
-                        getActivity().getString(R.string.pref_location_default));
+        String locationSettings = Utility.getPreferredLocation(getActivity());
 
-        new FetchWeatherTask(getActivity(), mForecastAdapter).execute(location);
+        String sortOrder = WeatherContract.WeatherEntry.COLUMN_DATE + " ASC";
+
+        Uri wetherForLocationUri = WeatherContract.WeatherEntry
+                .buildWeatherLocationWithDate(locationSettings, System.currentTimeMillis());
+
+        Cursor cur = getActivity().getContentResolver()
+                .query(wetherForLocationUri, null, null, null, sortOrder);
+
+        mForecastAdapter = new ForecastAdapter(getActivity(), cur, 0);
+
+        View rootView = inflater.inflate(R.layout.f_forecast, container, false);
+
+        ListView listView = (ListView) rootView.findViewById(R.id.listview_forecast);
+        listView.setAdapter(mForecastAdapter);
+
+        return rootView;
     }
 
-    private String createUrlString(String zipCode) {
-
-        String format = "json";
-        String units = "metric";
-        int numDays = 14;
-
-        final String FORECAST_BASE_URL = "http://api.openweathermap.org/data/2.5/forecast/daily?";
-        final String QUERY_PARAM = "q";
-        final String FORMAT_PARAM = "mode";
-        final String UNITS_PARAM = "units";
-        final String DAYS_PARAM = "cnt";
-
-        return Uri.parse(FORECAST_BASE_URL).buildUpon()
-                .appendQueryParameter(QUERY_PARAM, zipCode)
-                .appendQueryParameter(FORMAT_PARAM, format)
-                .appendQueryParameter(UNITS_PARAM, units)
-                .appendQueryParameter(DAYS_PARAM, "" + numDays)
-                .build().toString();
+    @Override
+    public void onStart() {
+        super.onStart();
+        updateWeather();
     }
 
-    private String[] getWeatherDataFromJson(String forecastJsonStr, int numDays) throws JSONException {
+    private void updateWeather() {
 
-        final String OWM_LIST = "list";
-        final String OWM_WEATHER = "weather";
-        final String OWM_TEMPERATURE = "temp";
-        final String OWM_MAX = "max";
-        final String OWM_MIN = "min";
-        final String OWM_DESCRIPTION = "main";
-
-        JSONObject serverResponse = new JSONObject(forecastJsonStr);
-
-        JSONObject coords = serverResponse.getJSONObject("city").getJSONObject("coord");
-
-        PreferenceManager.getDefaultSharedPreferences(getActivity()).edit()
-                .putString(getActivity().getString(R.string.current_location_coords),
-                        coords.getString("lat") + "," + coords.getString("lon")).apply();
-
-        JSONArray weatherArray = serverResponse.getJSONArray(OWM_LIST);
-
-        Time dayTime = new Time();
-        dayTime.setToNow();
-
-        int julianStartDay = Time.getJulianDay(System.currentTimeMillis(), dayTime.gmtoff);
-
-        // now we work exclusively in UTC
-        dayTime = new Time();
-
-        String[] result = new String[numDays];
-
-        for (int i = 0; i < weatherArray.length(); i++) {
-
-            String day;
-            String description;
-            String highAndLow;
-
-            JSONObject dayForecast = weatherArray.getJSONObject(i);
-
-            long dateTime;
-
-            dateTime = dayTime.setJulianDay(julianStartDay + i);
-            day = getReadableDateString(dateTime);
-
-            description = dayForecast
-                    .getJSONArray(OWM_WEATHER)
-                    .getJSONObject(0)
-                    .getString(OWM_DESCRIPTION);
-
-            JSONObject temperatureObject = dayForecast.getJSONObject(OWM_TEMPERATURE);
-
-            double high = temperatureObject.getDouble(OWM_MAX);
-            double low = temperatureObject.getDouble(OWM_MIN);
-
-            if (PreferenceManager.getDefaultSharedPreferences(getActivity())
-                    .getString(getActivity().getString(R.string.pref_units_key),
-                            getActivity().getString(R.string.pref_units_metric))
-                    .equals(getActivity().getString(R.string.pref_units_imperial))) {
-                high = celsiusToFahrenheit(high);
-                low = celsiusToFahrenheit(low);
-            }
-
-            highAndLow = Math.round(high) + "/" + Math.round(low);
-
-            result[i] = day + " - " + description + " - " + highAndLow;
-        }
-
-        return result;
-    }
-
-    private double celsiusToFahrenheit(double d) {
-        return d * 9 / 5 + 32;
-    }
-
-    private String getReadableDateString(long dateTime) {
-
-        SimpleDateFormat shortenedDateFormat = new SimpleDateFormat("EEE MMM dd");
-
-        return shortenedDateFormat.format(dateTime);
+        new FetchWeatherTask(getActivity()).execute(Utility.getPreferredLocation(getActivity()));
     }
 }

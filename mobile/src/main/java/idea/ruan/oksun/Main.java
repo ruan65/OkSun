@@ -4,12 +4,10 @@ import android.content.ComponentName;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.Toast;
 
 public class Main extends AppCompatActivity {
 
@@ -44,24 +42,35 @@ public class Main extends AppCompatActivity {
 
             case R.id.action_view_location:
 
-                Intent intent = new Intent(Intent.ACTION_VIEW);
+                openPreferredLocationInMap();
 
-                String currentLocationCoords = PreferenceManager.getDefaultSharedPreferences(this)
-                        .getString(getString(R.string.current_location_coords), "");
-
-                intent.setData(Uri.parse("geo:" + currentLocationCoords + "?z=11"));
-
-                ComponentName componentName = intent.resolveActivity(getPackageManager());
-
-                if (componentName != null) {
-                    startActivity(intent);
-                } else {
-                    Toast.makeText(this, getString(R.string.toast_err_location_view),
-                            Toast.LENGTH_LONG).show();
-                }
                 return true;
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private void openPreferredLocationInMap() {
+
+        Intent intent = new Intent(Intent.ACTION_VIEW);
+
+        String location = Utility.getPreferredLocation(this);
+
+//        Uri geoLocation = Uri.parse("geo:" + currentLocationCoords + "?z=11");
+
+        Uri geoLocation = Uri.parse("geo:0,0?").buildUpon()
+                .appendQueryParameter("q", location)
+                .build();
+
+        intent.setData(geoLocation);
+
+        ComponentName componentName = intent.resolveActivity(getPackageManager());
+
+        if (componentName != null) {
+            startActivity(intent);
+        } else {
+            Log.d(Main.class.getSimpleName(),
+                    "Couldn't call " + location + ", no receiving apps installed!");
+        }
     }
 }
