@@ -55,11 +55,12 @@ public class ForecastFragment extends Fragment {
 
         String sortOrder = WeatherContract.WeatherEntry.COLUMN_DATE + " ASC";
 
-        Uri wetherForLocationUri = WeatherContract.WeatherEntry
-                .buildWeatherLocationWithDate(locationSettings, System.currentTimeMillis());
+        Uri weatherForLocationUri = WeatherContract.WeatherEntry
+                .buildWeatherLocationWithStartDate(locationSettings, System.currentTimeMillis());
+
 
         Cursor cur = getActivity().getContentResolver()
-                .query(wetherForLocationUri, null, null, null, sortOrder);
+                .query(weatherForLocationUri, null, null, null, sortOrder);
 
         mForecastAdapter = new ForecastAdapter(getActivity(), cur, 0);
 

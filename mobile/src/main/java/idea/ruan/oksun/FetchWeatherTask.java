@@ -19,15 +19,12 @@ import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.database.Cursor;
-import android.database.DatabaseUtils;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.preference.PreferenceManager;
 import android.text.format.Time;
 import android.util.Log;
-import android.widget.ArrayAdapter;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -39,8 +36,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.Vector;
 
 import idea.ruan.oksun.data.WeatherContract;
@@ -154,6 +149,7 @@ public class FetchWeatherTask extends AsyncTask<String, Void, Void> {
             PreferenceManager.getDefaultSharedPreferences(mContext).edit()
                     .putString(mContext.getString(R.string.current_location_coords),
                             coords.getString("lat") + "," + coords.getString("lon")).apply();
+
             JSONArray weatherArray = forecastJson.getJSONArray(OWM_LIST);
 
             JSONObject cityJson = forecastJson.getJSONObject(OWM_CITY);
@@ -245,6 +241,8 @@ public class FetchWeatherTask extends AsyncTask<String, Void, Void> {
 
                 ContentValues[] cvArray = new ContentValues[cVVector.size()];
 
+                cVVector.toArray(cvArray);
+
                 inserted = mContext.getContentResolver()
                         .bulkInsert(WeatherContract.WeatherEntry.CONTENT_URI, cvArray);
 
@@ -325,6 +323,7 @@ public class FetchWeatherTask extends AsyncTask<String, Void, Void> {
             }
             forecastJsonStr = buffer.toString();
             getWeatherDataFromJson(forecastJsonStr, locationQuery);
+
         } catch (IOException e) {
             Log.e(LOG_TAG, "Error ", e);
             // If the code didn't successfully get the weather data, there's no point in attempting
