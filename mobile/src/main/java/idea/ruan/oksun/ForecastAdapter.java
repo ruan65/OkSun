@@ -50,9 +50,8 @@ public class ForecastAdapter extends CursorAdapter {
      */
     @Override
     public View newView(Context context, Cursor cursor, ViewGroup parent) {
-        View view = LayoutInflater.from(context).inflate(R.layout.list_item_forecast, parent, false);
 
-        return view;
+        return LayoutInflater.from(context).inflate(R.layout.list_item_forecast, parent, false);
     }
 
     /*
@@ -63,7 +62,16 @@ public class ForecastAdapter extends CursorAdapter {
         // our view is pretty simple here --- just a text view
         // we'll keep the UI functional with a simple (and slow!) binding.
 
-        TextView tv = (TextView)view;
-        tv.setText(convertCursorRowToUXFormat(cursor));
+        ((TextView)view.findViewById(R.id.list_item_forecast_textview))
+                .setText(cursor.getString(COL_WEATHER_DESC));
+
+        ((TextView)view.findViewById(R.id.list_item_date_textview))
+                .setText(cursor.getString(COL_WEATHER_DATE));
+
+        ((TextView)view.findViewById(R.id.list_item_high_textview))
+                .setText(cursor.getString(COL_WEATHER_MAX_TEMP));
+
+        ((TextView)view.findViewById(R.id.list_item_low_textview))
+                .setText(cursor.getString(COL_WEATHER_MIN_TEMP));
     }
 }
