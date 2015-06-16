@@ -2,14 +2,20 @@ package idea.ruan.oksun;
 
 import android.content.ComponentName;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
 public class Main extends AppCompatActivity {
+
+    private String mLocation;
+    private static final String FORECASTFRAGMENT_TAG = "forecast_fragment";
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -18,8 +24,27 @@ public class Main extends AppCompatActivity {
 
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()
-                    .add(R.id.container, new ForecastFragment())
+                    .add(R.id.container, new ForecastFragment(), FORECASTFRAGMENT_TAG)
                     .commit();
+        }
+
+        mLocation = Utility.getPreferredLocation(this);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        String currentLocation = Utility.getPreferredLocation(this);
+
+        if (mLocation != null && !mLocation.equals(currentLocation)) {
+
+            mLocation = currentLocation;
+
+            ForecastFragment ff = (ForecastFragment) getSupportFragmentManager()
+                    .findFragmentByTag(FORECASTFRAGMENT_TAG);
+
+            ff.onLocationChanged();
         }
     }
 
