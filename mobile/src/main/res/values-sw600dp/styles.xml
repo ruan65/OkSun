@@ -1,6 +1,6 @@
 <resources>
 
-    <style name="list_item_style" parent="match_parent_both">
+    <style name="list_item_style" parent="match_both">
         <item name="android:choiceMode">singleChoice</item>
     </style>
     
