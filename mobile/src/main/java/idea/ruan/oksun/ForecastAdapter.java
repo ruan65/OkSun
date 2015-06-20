@@ -3,12 +3,14 @@ package idea.ruan.oksun;
 import android.content.Context;
 import android.database.Cursor;
 import android.support.v4.widget.CursorAdapter;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import static idea.ruan.oksun.ForecastFragment.*;
 import static idea.ruan.oksun.ForecastFragment.COL_WEATHER_DATE;
 import static idea.ruan.oksun.ForecastFragment.COL_WEATHER_DESC;
 import static idea.ruan.oksun.ForecastFragment.COL_WEATHER_MAX_TEMP;
@@ -55,9 +57,13 @@ public class ForecastAdapter extends CursorAdapter {
 
         ViewHolder h = (ViewHolder) view.getTag();
 
-        int weatherId = cursor.getInt(ForecastFragment.COL_WEATHER_ID);
+        int item_view_type = getItemViewType(cursor.getPosition());
 
-        h.iconView.setImageResource(R.mipmap.ic_launcher);
+        int weatherId = cursor.getInt(COL_WEATHER_CONDITION_ID);
+
+        h.iconView.setImageResource(item_view_type == VIEW_TYPE_FUTURE_DAY
+                ? Utility.getIconResourceForWeatherCondition(weatherId)
+                : Utility.getArtResourceForWeatherCondition(weatherId));
 
         h.descriptionView.setText(cursor.getString(COL_WEATHER_DESC));
 
@@ -73,6 +79,8 @@ public class ForecastAdapter extends CursorAdapter {
         h.low.setText(Utility.formatTemperature(
                 mContext, cursor.getDouble(COL_WEATHER_MIN_TEMP), isMetric));
     }
+
+
 
     /**
      * Cache of the children views for a forecast list item.

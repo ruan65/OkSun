@@ -8,5 +8,13 @@
         <item name="colorAccent">@color/accent</item>
     </style>
 
+    <style name="list_item_style" parent="match_parent_both">
+    </style>
+
+    <style name="match_parent_both">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">match_parent</item>
+    </style>
+
 
 </resources>

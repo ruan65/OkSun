@@ -1,8 +1,10 @@
 package idea.ruan.oksun;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
@@ -25,6 +27,8 @@ import static idea.ruan.oksun.data.WeatherContract.WeatherEntry;
 
 public class DetailFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
 
+    public static final String DETAIL_URI = "URI";
+
     private static final String FORECAST_SHARE_HASHTAG = "#OkSunApp";
 
     private static final int FORECAST_LOADER_ID = 0xEba;
@@ -33,7 +37,9 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
 
     private String mForecast;
 
-    DetailActivity ctx;
+    private Context ctx;
+
+    private Uri mUri;
 
     private static final String[] DETAIL_COLUMNS = {
 
@@ -76,11 +82,31 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
         setHasOptionsMenu(true);
     }
 
+    public static DetailFragment newInstance(int index) {
+
+        DetailFragment f = new DetailFragment();
+
+        Bundle args = new Bundle();
+
+        args.putInt("index", index);
+
+        f.setArguments(args);
+
+        return f;
+    }
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
+        Bundle args = getArguments();
+
+        if (args != null) {
+            mUri = args.getParcelable(DetailFragment.DETAIL_URI);
+        }
+
         View rootView = inflater.inflate(R.layout.f_detail, container, false);
+
         mIconView = (ImageView) rootView.findViewById(R.id.detail_icon);
         mDateView = (TextView) rootView.findViewById(R.id.detail_date_textview);
         mFriendlyDateView = (TextView) rootView.findViewById(R.id.detail_day_textview);
@@ -97,7 +123,7 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
-        ctx = (DetailActivity) activity;
+        ctx = activity;
     }
 
     @Override
@@ -137,62 +163,78 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
 
-        Intent intent = getActivity().getIntent();
+        if (mUri == null) return null;
 
-        if (intent == null) return null;
-
-        return new CursorLoader(ctx, intent.getData(), DETAIL_COLUMNS, null, null, null);
+        return new CursorLoader(ctx, mUri, DETAIL_COLUMNS, null, null, null);
     }
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor c) {
 
-        if (c == null || !c.moveToFirst()) return;
+        if (c != null && c.moveToFirst()) {
 
-        int weatherId = c.getInt(COL_WEATHER_DATE);
+            int weatherId = c.getInt(COL_WEATHER_CONDITION_ID);
 
-        mIconView.setImageResource(R.mipmap.ic_launcher);
+            mIconView.setImageResource(Utility.getArtResourceForWeatherCondition(weatherId));
 
-        long date = c.getLong(COL_WEATHER_DATE);
-        String friendlyDateText = Utility.getDayName(ctx, date);
-        String dateText = Utility.getFormattedMonthDay(ctx, date);
+            long date = c.getLong(COL_WEATHER_DATE);
+            String friendlyDateText = Utility.getDayName(ctx, date);
+            String dateText = Utility.getFormattedMonthDay(ctx, date);
 
-        mFriendlyDateView.setText(friendlyDateText);
-        mDateView.setText(dateText);
+            mFriendlyDateView.setText(friendlyDateText);
+            mDateView.setText(dateText);
 
-        String description = c.getString(COL_WEATHER_DESC);
-        mDescriptionView.setText(description);
+            String description = c.getString(COL_WEATHER_DESC);
+            mDescriptionView.setText(description);
 
-        boolean isMetric = Utility.isMetric(getActivity());
-        double high = c.getDouble(COL_WEATHER_MAX_TEMP);
-        String highString = Utility.formatTemperature(getActivity(), high, isMetric);
+            boolean isMetric = Utility.isMetric(getActivity());
+            double high = c.getDouble(COL_WEATHER_MAX_TEMP);
+            String highString = Utility.formatTemperature(getActivity(), high, isMetric);
 
-        mHighTempView.setText(highString);
+            mHighTempView.setText(highString);
 
-        double low = c.getDouble(COL_WEATHER_MIN_TEMP);
-        String lowString = Utility.formatTemperature(ctx, low, isMetric);
+            double low = c.getDouble(COL_WEATHER_MIN_TEMP);
+            String lowString = Utility.formatTemperature(ctx, low, isMetric);
 
-        mLowTempView.setText(lowString);
+            mLowTempView.setText(lowString);
 
-        float humidity = c.getFloat(COL_WEATHER_HUMIDITY);
-        mHumidityView.setText(ctx.getString(R.string.format_humidity, humidity));
+            float humidity = c.getFloat(COL_WEATHER_HUMIDITY);
+            mHumidityView.setText(ctx.getString(R.string.format_humidity, humidity));
 
-        float windSpeedStr = c.getFloat(COL_WEATHER_WIND_SPEED);
-        float windDirStr = c.getFloat(COL_WEATHER_DEGREES);
+            float windSpeedStr = c.getFloat(COL_WEATHER_WIND_SPEED);
+            float windDirStr = c.getFloat(COL_WEATHER_DEGREES);
 
-        mWindView.setText(Utility.getFormattedWind(ctx, windSpeedStr, windDirStr));
+            mWindView.setText(Utility.getFormattedWind(ctx, windSpeedStr, windDirStr));
 
-        float pressure = c.getFloat(COL_WEATHER_PRESSURE);
-        mPressureView.setText(ctx.getString(R.string.format_pressure, pressure));
+            float pressure = c.getFloat(COL_WEATHER_PRESSURE);
+            mPressureView.setText(ctx.getString(R.string.format_pressure, pressure));
 
-        mForecast = String.format("%s - %s - %s/%s", dateText, description, high, low);
+            mForecast = String.format("%s - %s - %s/%s", dateText, description, high, low);
 
-        if (mShareActionProvider != null) {
-            mShareActionProvider.setShareIntent(createShareForecastIntent());
+            if (mShareActionProvider != null) {
+                mShareActionProvider.setShareIntent(createShareForecastIntent());
+            }
         }
+
+
     }
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
+    }
+
+    public void onLocationChanged(String newLocation) {
+
+        Uri uri = mUri;
+
+        if (uri != null) {
+            long date = WeatherContract.WeatherEntry.getDateFromUri(uri);
+            Uri updatedUri = WeatherContract.WeatherEntry
+                    .buildWeatherLocationWithDate(newLocation, date);
+
+            mUri = updatedUri;
+
+            getLoaderManager().restartLoader(FORECAST_LOADER_ID, null, this);
+        }
     }
 }

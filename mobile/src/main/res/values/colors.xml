@@ -4,4 +4,7 @@
     <color name="primary_dark">#e44a19</color>
     <color name="accent">#512da8</color>
 
+    <color name="grey">#cccccc</color>
+    <color name="sunshine_light_blue">#ff64c2f4</color>
+
 </resources>
