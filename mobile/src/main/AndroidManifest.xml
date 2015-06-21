@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="idea.ruan.oksun" >
+    package="idea.ruan.oksun">
 
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.INTERNET" />
@@ -9,20 +9,23 @@
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
-        android:theme="@style/AppTheme" >
+        android:theme="@style/AppTheme">
         <activity
             android:name=".Main"
-            android:label="@string/app_name" >
+            android:label="@string/app_name"
+            android:theme="@style/ForecastTheme">
             <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
 
+                <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
+
             </intent-filter>
         </activity>
+
         <activity
             android:name=".DetailActivity"
             android:label="@string/title_activity_detail"
-            android:parentActivityName=".Main" >
+            android:parentActivityName=".Main">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="idea.ruan.oksun.Main" />
@@ -31,15 +34,16 @@
         <activity
             android:name=".SettingsActivity"
             android:label="@string/title_activity_settings"
-            android:parentActivityName=".Main" >
+            android:parentActivityName=".Main"
+            android:theme="@style/SettingsTheme">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="idea.ruan.oksun.Main" />
         </activity>
 
         <provider
-            android:authorities="idea.ruan.oksun"
-            android:name=".data.WeatherProvider" />
+            android:name=".data.WeatherProvider"
+            android:authorities="idea.ruan.oksun" />
 
     </application>
 

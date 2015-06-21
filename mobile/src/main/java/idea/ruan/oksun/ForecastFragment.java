@@ -34,7 +34,8 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
 
     private ListView mListView;
 
-    private int mSelectedPos;
+    private int mSelectedPos = ListView.INVALID_POSITION;
+    private boolean mUseTodayLayout;
 
     static final int COL_WEATHER_ID = 0;
     static final int COL_WEATHER_DATE = 1;
@@ -120,6 +121,7 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
                              Bundle savedInstanceState) {
 
         mForecastAdapter = new ForecastAdapter(getActivity(), null, 0);
+        mForecastAdapter.setUseTodayLayout(mUseTodayLayout);
 
         View rootView = inflater.inflate(R.layout.f_forecast, container, false);
 
@@ -201,7 +203,16 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
     }
 
     @Override
-    public void onLoaderReset(Loader loader) {
+    public void onLoaderReset(Loader<Cursor> loader) {
         mForecastAdapter.swapCursor(null);
+    }
+
+    public void setUseTodayLayout(boolean useTodayLayout) {
+
+        mUseTodayLayout = useTodayLayout;
+
+        if (mForecastAdapter != null) {
+            mForecastAdapter.setUseTodayLayout(useTodayLayout);
+        }
     }
 }

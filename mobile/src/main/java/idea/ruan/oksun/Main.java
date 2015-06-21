@@ -2,19 +2,13 @@ package idea.ruan.oksun;
 
 import android.content.ComponentName;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
-import android.support.v4.app.DialogFragment;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-
-import com.google.android.gms.fitness.request.DisableFitRequest;
-
-import idea.ruan.oksun.data.WeatherContract;
 
 public class Main extends AppCompatActivity implements ForecastFragment.Callback {
 
@@ -40,7 +34,18 @@ public class Main extends AppCompatActivity implements ForecastFragment.Callback
                                 new DetailFragment(), DETAILFRAGMENT_TAG)
                         .commit();
             }
-        } else mTwoPane = false;
+        } else {
+            mTwoPane = false;
+            ActionBar supportActionBar = getSupportActionBar();
+            if (supportActionBar != null) {
+                supportActionBar.setElevation(0f);
+            }
+        }
+
+        ForecastFragment ff = (ForecastFragment) getSupportFragmentManager()
+                .findFragmentById(R.id.fragment_forecast);
+
+        ff.setUseTodayLayout(!mTwoPane);
     }
 
     @Override
