@@ -36,10 +36,10 @@ public class Main extends AppCompatActivity implements ForecastFragment.Callback
             }
         } else {
             mTwoPane = false;
-            ActionBar supportActionBar = getSupportActionBar();
-            if (supportActionBar != null) {
-                supportActionBar.setElevation(0f);
-            }
+//            ActionBar supportActionBar = getSupportActionBar();
+//            if (supportActionBar != null) {
+//                supportActionBar.setElevation(0f);
+//            }
         }
 
         ForecastFragment ff = (ForecastFragment) getSupportFragmentManager()
