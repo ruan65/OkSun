@@ -8,6 +8,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -94,7 +95,6 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
         if (mSelectedPos != ListView.INVALID_POSITION) {
             outState.putInt(SELECTED_POS, mSelectedPos);
         }
-
     }
 
     @Override
@@ -136,6 +136,8 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
 
                 mSelectedPos = position;
 
+
+
                 if (cursor != null) {
 
                     String locationSettings = Utility.getPreferredLocation(getActivity());
@@ -161,6 +163,9 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
     public void onActivityCreated(Bundle savedInstanceState) {
 
         getLoaderManager().initLoader(FORECAST_LOADER_ID, null, this);
+
+
+
         super.onActivityCreated(savedInstanceState);
     }
 
@@ -195,10 +200,13 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
 
     @Override
     public void onLoadFinished(Loader loader, Cursor cursor) {
+
         mForecastAdapter.swapCursor(cursor);
 
         if (mSelectedPos != ListView.INVALID_POSITION) {
+
             mListView.smoothScrollToPosition(mSelectedPos);
+
         }
     }
 

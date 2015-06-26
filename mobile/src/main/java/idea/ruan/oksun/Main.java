@@ -14,7 +14,7 @@ public class Main extends AppCompatActivity implements ForecastFragment.Callback
 
     private String mLocation;
     private static final String DETAILFRAGMENT_TAG = "DFTAG";
-    private boolean mTwoPane;
+    boolean mTwoPane;
 
 
     @Override
