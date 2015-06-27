@@ -164,8 +164,6 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
 
         getLoaderManager().initLoader(FORECAST_LOADER_ID, null, this);
 
-
-
         super.onActivityCreated(savedInstanceState);
     }
 
@@ -206,7 +204,6 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
         if (mSelectedPos != ListView.INVALID_POSITION) {
 
             mListView.smoothScrollToPosition(mSelectedPos);
-
         }
     }
 
