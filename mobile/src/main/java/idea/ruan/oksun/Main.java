@@ -4,16 +4,19 @@ import android.content.ComponentName;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.ListView;
 
 public class Main extends AppCompatActivity implements ForecastFragment.Callback {
 
     private String mLocation;
     private static final String DETAILFRAGMENT_TAG = "DFTAG";
     boolean mTwoPane;
+    private int selectedId = -1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,6 +47,8 @@ public class Main extends AppCompatActivity implements ForecastFragment.Callback
                 .findFragmentById(R.id.fragment_forecast);
 
         ff.setUseTodayLayout(!mTwoPane);
+
+        selectedId = ff.getmSelectedPos();
     }
 
     @Override
@@ -66,6 +71,30 @@ public class Main extends AppCompatActivity implements ForecastFragment.Callback
 
             if (df != null) df.onLocationChanged(mLocation);
 
+        }
+
+        if (mTwoPane) {
+
+            final ForecastFragment ff = (ForecastFragment) getSupportFragmentManager()
+                    .findFragmentById(R.id.fragment_forecast);
+
+            final ListView lv = ff.getmListView();
+
+            if (ff.getmSelectedPos() == ListView.INVALID_POSITION) ff.setmSelectedPos(0);
+
+            new Handler().post(new Runnable() {
+
+                int pos = ff.getmSelectedPos();
+
+                @Override
+                public void run() {
+
+                    lv.performItemClick(
+                            lv.getChildAt(pos),
+                            pos,
+                            lv.getAdapter().getItemId(pos));
+                }
+            });
         }
     }
 

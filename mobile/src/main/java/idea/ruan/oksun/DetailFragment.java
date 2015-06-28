@@ -237,4 +237,8 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
             getLoaderManager().restartLoader(FORECAST_LOADER_ID, null, this);
         }
     }
+
+    public TextView getmDateView() {
+        return mDateView;
+    }
 }

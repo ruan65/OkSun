@@ -187,17 +187,6 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
 
             mListView.smoothScrollToPosition(mSelectedPos);
         }
-
-        if (((Main) getActivity()).mTwoPane){
-
-            if (mSelectedPos == ListView.INVALID_POSITION) mSelectedPos = 0;
-            new Handler().post(new Runnable() {
-                @Override
-                public void run() {
-                    mListView.performItemClick(mListView.getChildAt(mSelectedPos), mSelectedPos, mListView.getAdapter().getItemId(mSelectedPos));
-                }
-            });
-        }
     }
 
     @Override
@@ -231,5 +220,17 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    public int getmSelectedPos() {
+        return mSelectedPos;
+    }
+
+    public ListView getmListView() {
+        return mListView;
+    }
+
+    public void setmSelectedPos(int mSelectedPos) {
+        this.mSelectedPos = mSelectedPos;
     }
 }
