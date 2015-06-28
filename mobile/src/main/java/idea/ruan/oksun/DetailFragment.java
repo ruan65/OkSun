@@ -148,6 +148,7 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
         }
     }
 
+    @SuppressWarnings("deprecation")
     private Intent createShareForecastIntent() {
 
         Intent shareIntent = new Intent(Intent.ACTION_SEND);
@@ -229,16 +230,11 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
 
         if (uri != null) {
             long date = WeatherContract.WeatherEntry.getDateFromUri(uri);
-            Uri updatedUri = WeatherContract.WeatherEntry
-                    .buildWeatherLocationWithDate(newLocation, date);
 
-            mUri = updatedUri;
+            mUri = WeatherContract.WeatherEntry
+                    .buildWeatherLocationWithDate(newLocation, date);
 
             getLoaderManager().restartLoader(FORECAST_LOADER_ID, null, this);
         }
-    }
-
-    public TextView getmDateView() {
-        return mDateView;
     }
 }

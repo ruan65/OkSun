@@ -16,7 +16,6 @@ public class Main extends AppCompatActivity implements ForecastFragment.Callback
     private String mLocation;
     private static final String DETAILFRAGMENT_TAG = "DFTAG";
     boolean mTwoPane;
-    private int selectedId = -1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,8 +46,6 @@ public class Main extends AppCompatActivity implements ForecastFragment.Callback
                 .findFragmentById(R.id.fragment_forecast);
 
         ff.setUseTodayLayout(!mTwoPane);
-
-        selectedId = ff.getmSelectedPos();
     }
 
     @Override
@@ -71,30 +68,6 @@ public class Main extends AppCompatActivity implements ForecastFragment.Callback
 
             if (df != null) df.onLocationChanged(mLocation);
 
-        }
-
-        if (mTwoPane) {
-
-            final ForecastFragment ff = (ForecastFragment) getSupportFragmentManager()
-                    .findFragmentById(R.id.fragment_forecast);
-
-            final ListView lv = ff.getmListView();
-
-            if (ff.getmSelectedPos() == ListView.INVALID_POSITION) ff.setmSelectedPos(0);
-
-            new Handler().post(new Runnable() {
-
-                int pos = ff.getmSelectedPos();
-
-                @Override
-                public void run() {
-
-                    lv.performItemClick(
-                            lv.getChildAt(pos),
-                            pos,
-                            lv.getAdapter().getItemId(pos));
-                }
-            });
         }
     }
 
@@ -170,6 +143,33 @@ public class Main extends AppCompatActivity implements ForecastFragment.Callback
             Intent intent = new Intent(this, DetailActivity.class).setData(uri);
 
             startActivity(intent);
+        }
+    }
+
+    @Override
+    public void performSelectedItemClick() {
+        if (mTwoPane) {
+
+            final ForecastFragment ff = (ForecastFragment) getSupportFragmentManager()
+                    .findFragmentById(R.id.fragment_forecast);
+
+            final ListView lv = ff.getmListView();
+
+            if (ff.getmSelectedPos() == ListView.INVALID_POSITION) ff.setmSelectedPos(0);
+
+            new Handler().post(new Runnable() {
+
+                int pos = ff.getmSelectedPos();
+
+                @Override
+                public void run() {
+
+                    lv.performItemClick(
+                            lv.getChildAt(pos),
+                            pos,
+                            lv.getAdapter().getItemId(pos));
+                }
+            });
         }
     }
 }

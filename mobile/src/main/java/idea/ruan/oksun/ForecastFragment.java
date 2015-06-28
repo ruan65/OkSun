@@ -25,6 +25,7 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
 
     public interface Callback {
         void onItemSelected(Uri uri);
+        void performSelectedItemClick();
     }
 
     private ForecastAdapter mForecastAdapter;
@@ -186,6 +187,10 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
         if (mSelectedPos != ListView.INVALID_POSITION) {
 
             mListView.smoothScrollToPosition(mSelectedPos);
+        }
+
+        if (((Main) mCallback).mTwoPane) {
+            mCallback.performSelectedItemClick();
         }
     }
 
