@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
@@ -98,25 +99,6 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
     }
 
     @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        inflater.inflate(R.menu.m_f_forecast, menu);
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-
-        int id = item.getItemId();
-
-        if (id == R.id.action_refresh) {
-
-            updateWeather();
-
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
-    }
-
-    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
@@ -154,6 +136,7 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
         });
 
         if (savedInstanceState != null) {
+
             mSelectedPos = savedInstanceState.getInt(SELECTED_POS);
         }
         return rootView;
@@ -177,9 +160,8 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
         getLoaderManager().restartLoader(FORECAST_LOADER_ID, null, this);
     }
 
-
     @Override
-    public Loader onCreateLoader(int id, Bundle args) {
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
 
         String locationSettings = Utility.getPreferredLocation(getActivity());
 
@@ -205,6 +187,17 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
 
             mListView.smoothScrollToPosition(mSelectedPos);
         }
+
+        if (((Main) getActivity()).mTwoPane){
+
+            if (mSelectedPos == ListView.INVALID_POSITION) mSelectedPos = 0;
+            new Handler().post(new Runnable() {
+                @Override
+                public void run() {
+                    mListView.performItemClick(mListView.getChildAt(mSelectedPos), mSelectedPos, mListView.getAdapter().getItemId(mSelectedPos));
+                }
+            });
+        }
     }
 
     @Override
@@ -219,5 +212,24 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
         if (mForecastAdapter != null) {
             mForecastAdapter.setUseTodayLayout(useTodayLayout);
         }
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        inflater.inflate(R.menu.m_f_forecast, menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+
+        int id = item.getItemId();
+
+        if (id == R.id.action_refresh) {
+
+            updateWeather();
+
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 }
