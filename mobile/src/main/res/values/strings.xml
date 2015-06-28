@@ -35,6 +35,9 @@
 
     <string name="format_humidity">Humidity: <xliff:g id="humidity">%1.0f</xliff:g> %%</string>
     <string name="detail_icon">detailIcon</string>
+    <string name="detail_icon_description">Detail icon</string>
+    <string name="desc_max_temp">maximum temperature</string>
+    <string name="desc_min_temp">minimal temperature</string>
 
 
 </resources>

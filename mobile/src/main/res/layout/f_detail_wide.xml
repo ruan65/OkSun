@@ -81,6 +81,7 @@
 
             <ImageView
                 android:id="@+id/detail_icon"
+                android:contentDescription="@string/detail_icon_description"
                 style="@style/wrap_both" />
 
             <TextView

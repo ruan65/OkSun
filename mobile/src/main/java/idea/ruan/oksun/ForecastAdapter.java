@@ -67,7 +67,9 @@ public class ForecastAdapter extends CursorAdapter {
                 ? Utility.getIconResourceForWeatherCondition(weatherId)
                 : Utility.getArtResourceForWeatherCondition(weatherId));
 
-        h.descriptionView.setText(cursor.getString(COL_WEATHER_DESC));
+        String description = cursor.getString(COL_WEATHER_DESC);
+        h.descriptionView.setText(description);
+        h.iconView.setContentDescription(description);
 
         long dateInMillis = Long.parseLong(cursor.getString(COL_WEATHER_DATE));
 
