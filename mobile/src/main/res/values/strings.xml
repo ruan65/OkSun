@@ -38,6 +38,7 @@
     <string name="detail_icon_description">Detail icon</string>
     <string name="desc_max_temp">maximum temperature</string>
     <string name="desc_min_temp">minimal temperature</string>
+    <string name="current_location_key">current_location</string>
 
 
 </resources>

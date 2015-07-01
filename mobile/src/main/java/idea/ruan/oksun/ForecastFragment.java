@@ -1,11 +1,14 @@
 package idea.ruan.oksun;
 
 import android.app.Activity;
+import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
@@ -20,6 +23,7 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 
 import idea.ruan.oksun.data.WeatherContract;
+import idea.ruan.oksun.service.OkSunService;
 
 public class ForecastFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
 
@@ -36,6 +40,8 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
     private Callback mCallback;
 
     private ListView mListView;
+
+    private Context ctx;
 
     private int mSelectedPos = ListView.INVALID_POSITION;
     private boolean mUseTodayLayout;
@@ -75,6 +81,7 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
     public void onAttach(Activity activity) {
         super.onAttach(activity);
 
+        ctx = activity;
         try {
             mCallback = (Callback) activity;
         } catch (ClassCastException ex) {
@@ -103,7 +110,7 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
-        mForecastAdapter = new ForecastAdapter(getActivity(), null, 0);
+        mForecastAdapter = new ForecastAdapter(ctx, null, 0);
         mForecastAdapter.setUseTodayLayout(mUseTodayLayout);
 
         View rootView = inflater.inflate(R.layout.f_forecast, container, false);
@@ -123,7 +130,7 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
 
                 if (cursor != null) {
 
-                    String locationSettings = Utility.getPreferredLocation(getActivity());
+                    String locationSettings = Utility.getPreferredLocation(ctx);
 
                     long date = cursor.getLong(COL_WEATHER_DATE);
 
@@ -153,7 +160,12 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
 
     private void updateWeather() {
 
-        new FetchWeatherTask(getActivity()).execute(Utility.getPreferredLocation(getActivity()));
+//        new FetchWeatherTask(getActivity()).execute(Utility.getPreferredLocation(getActivity()));
+
+
+        Intent i = new Intent(ctx, OkSunService.class);
+        i.putExtra(ctx.getString(R.string.current_location_key), Utility.getPreferredLocation(ctx));
+        ctx.startService(i);
     }
 
     public void onLocationChanged() {
@@ -164,14 +176,14 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
 
-        String locationSettings = Utility.getPreferredLocation(getActivity());
+        String locationSettings = Utility.getPreferredLocation(ctx);
 
         String sortOrder = WeatherContract.WeatherEntry.COLUMN_DATE + " ASC";
 
         Uri weatherForLocationUri = WeatherContract.WeatherEntry
                 .buildWeatherLocationWithStartDate(locationSettings, System.currentTimeMillis());
 
-        return new CursorLoader(getActivity(),
+        return new CursorLoader(ctx,
                 weatherForLocationUri,
                 FORECAST_COLUMNS,
                 null,
