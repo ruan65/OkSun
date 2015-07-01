@@ -46,6 +46,8 @@
             android:name=".data.WeatherProvider"
             android:authorities="idea.ruan.oksun" />
 
+        <service android:name=".service.OkSunService" />
+
     </application>
 
 </manifest>
